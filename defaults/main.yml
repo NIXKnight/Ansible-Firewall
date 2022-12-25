@@ -1,2 +1,51 @@
 ---
 # defaults file for Ansible-Firewall
+FW_PACKAGES:
+  - "nftables"
+
+FW_SERVICE_NAME: "firewall"
+FW_NFT_CONFIG_PATH: "/etc/nftables.conf"
+FW_NFT_BIN_PATH: "/usr/sbin/nft"
+FW_TC_BIN_PATH: "/usr/sbin/tc"
+FW_WRAPPER_SCRIPT_PATH: "/usr/local/bin/firewall"
+
+FW_NETWORK_INTERFACES:
+  - TYPE: "wan"
+    NAME: ""
+    BANDWIDTH: ""
+  - TYPE: "lan"
+    NAME: ""
+    BANDWIDTH: ""
+
+FW_TEMPLATES:
+  - src: "templates/etc/systemd/system/firewall.service.j2"
+    dest: "/etc/systemd/system/firewall.service"
+    mode: '0600'
+  - src: "templates/etc/nftables.conf.j2"
+    dest: "/etc/nftables.conf"
+    mode: '0600'
+  - src: "templates/usr/local/bin/firewall.sh.j2"
+    dest: "/usr/local/bin/firewall"
+    mode: '0700'
+
+FW_TABLE_IP_FILTER_CHAINS:
+  - NAME: "input"
+    FW_HOOK_ATTACHMENT: "type filter hook input priority 0; policy accept"
+    RULES: []
+  - NAME: "output"
+    FW_HOOK_ATTACHMENT: "type filter hook output priority 0; policy accept;"
+    RULES: []
+  - NAME: "forward"
+    FW_HOOK_ATTACHMENT: "type filter hook forward priority filter; policy accept"
+    RULES: []
+  - NAME: "postrouting"
+    FW_HOOK_ATTACHMENT: "type filter hook postrouting priority filter; policy accept;"
+    RULES: []
+
+FW_TABLE_IP_NAT_CHAINS:
+  - NAME: "postrouting"
+    FW_HOOK_ATTACHMENT: "type nat hook postrouting priority srcnat; policy accept;"
+    RULES: []
+  - NAME: "prerouting"
+    FW_HOOK_ATTACHMENT: "type nat hook prerouting priority 100; policy accept;"
+    RULES: []

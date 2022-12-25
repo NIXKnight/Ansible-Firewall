@@ -1,0 +1,20 @@
+# {{ ansible_managed | comment }}
+[Unit]
+Description={{ FW_SERVICE_NAME }}
+Wants=network-pre.target
+Before=network-pre.target shutdown.target
+Conflicts=shutdown.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardInput=null
+ProtectSystem=full
+ProtectHome=true
+ExecStart={{ FW_WRAPPER_SCRIPT_PATH }}
+ExecReload={{ FW_NFT_BIN_PATH }} -f {{ FW_NFT_CONFIG_PATH }}
+ExecStop={{ FW_NFT_BIN_PATH }} flush ruleset
+
+[Install]
+WantedBy=sysinit.target

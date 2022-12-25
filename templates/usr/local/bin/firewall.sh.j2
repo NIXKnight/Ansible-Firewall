@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# {{ ansible_managed }}
+
+set -e
+
+{% for INTERFACE in FW_NETWORK_INTERFACES %}
+echo -e "Configuring traffic control for {{ INTERFACE.NAME }} type {{ INTERFACE.TYPE }}."
+{% if INTERFACE.TYPE == "wan" %}
+{{ FW_TC_BIN_PATH }} qdisc replace dev {{ INTERFACE.NAME }} handle 1: root cake besteffort bandwidth {{ INTERFACE.BANDWIDTH }} internet nat egress ack-filter dual-srchost ethernet
+{% endif %}
+{% if INTERFACE.TYPE == "lan" %}
+/usr/sbin/tc qdisc replace dev {{ INTERFACE.NAME }} handle 1: root cake besteffort bandwidth {{ INTERFACE.BANDWIDTH }} internet ingress dual-dsthost ethernet
+{% endif %}
+{% endfor %}
+
+echo -e "Setting up nftables rules."
+{{ FW_NFT_BIN_PATH }} -f {{ FW_NFT_CONFIG_PATH }}

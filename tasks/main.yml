@@ -1,2 +1,20 @@
 ---
 # tasks file for Ansible-Firewall
+- name: Install nftables Package(s)
+  apt:
+    pkg: "{{ FW_PACKAGES }}"
+    update_cache: yes
+    state: present
+
+- name: Render Firewall Warpper Script, nftables Rule Set and Startup Configuration
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ FW_TEMPLATES }}"
+
+- name: Start/Enable Firewall
+  ansible.builtin.systemd:
+    name: firewall
+    state: started
+    enabled: true
